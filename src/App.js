@@ -6,7 +6,8 @@ import { sequenceExpression } from '@babel/types';
 class App extends React.Component {
  constructor(props){
    super(props);
-    const bankOne = [{
+   // banks taken from FCC drum machine 
+    this.bankOne = [{
     keyCode: 81,
     keyTrigger: 'Q',
     id: 'Heater-1',
@@ -53,7 +54,7 @@ class App extends React.Component {
     url: 'https://s3.amazonaws.com/freecodecamp/drums/Cev_H2.mp3'
   },
 ];
-    const bankTwo = [{
+    this.bankTwo = [{
   keyCode: 81,
   keyTrigger: 'Q',
   id: 'Chord-1',
@@ -99,20 +100,48 @@ class App extends React.Component {
   id: 'Snare',
   url: 'https://s3.amazonaws.com/freecodecamp/drums/Brk_Snr.mp3'
 }];
-this.state = {currentPadBank:bankOne}
+this.state = {currentPadBank:this.bankTwo,currentVolume:50,currentPadBankText:"Bank Two"}
+this.handleSlider = this.handleSlider.bind(this);
+this.handleVolume= this.handleVolume.bind(this);
+}
+handleSlider(event) {
+  console.log(event.target.value);
+  if(event.target.value ==1){
+    this.setState({currentPadBank:this.bankOne,currentPadBankText:"Bank One"})
 
+  }
+  if(event.target.value ==2){
+    this.setState({currentPadBank:this.bankTwo,currentPadBankText:"Bank Two"})
+  }
+}
+handleVolume(event) {
+this.setState({currentVolume:event.target.value});
 
 }
-
  render(){
   return (
     <div className="App">
       <header id ="drum-machine">
-      <PadBoard currentPadBank = {this.state.currentPadBank}/>
-      <div id = "display">Nothing</div>
+      <PadBoard volume={this.state.currentVolume} currentPadBank = {this.state.currentPadBank}/>
+      <div id = "selector-container">
+      <div className ="selector-container"><input type="range" min="1" max="2"  onChange = {this.handleSlider}  id="bankSelector" /><div id="padBankLabel">{this.state.currentPadBankText}</div></div> 
+      <div className ="selector-container"><input type="range" min="0" max="100"  onChange = {this.handleVolume} value ={this.state.currentVolume} className="slider" id="volumeSelector" /><div id ="volumeLabel">{this.state.currentVolume}</div></div> 
+       <div id = "display"></div>
+       </div>
+      
       </header>
-    </div>
+      </div>
+   
   );
+}
+
+componentDidMount () {
+  const script = document.createElement("script");
+
+  script.src = "https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js";
+  script.async = true;
+
+  document.body.appendChild(script);
 }
 }
 
@@ -144,11 +173,13 @@ class DrumPad extends React.Component{
     document.getElementById("display").innerHTML = this.props.name;
     let sound = document.getElementById(this.props.keyTrigger);
     console.log(this.props);
+    sound.volume = this.props.volume/100;
+    sound.currentTime = 0;
     sound.play();
    }  
   
   render(){ 
-    return  (<button className ="drum-pad"  onClick = {this.playAudio}>
+    return  (<button className ="drum-pad"  onClick = {this.playAudio} id ={this.props.name}>
       <audio className ="clip" id = {this.props.keyTrigger} src ={this.props.url}></audio>
       {this.props.keyTrigger}
       </button>);
@@ -166,12 +197,12 @@ constructor(props){
     let padBank = this.props.currentPadBank.map((obj,i,arr) => {
       return (
       <DrumPad 
-      keyTrigger = {arr[i].keyTrigger} keydown = {arr[i].keyCode} url = {arr[i].url} name = {arr[i].id}  />
+      keyTrigger = {arr[i].keyTrigger} keydown = {arr[i].keyCode} url = {arr[i].url} name = {arr[i].id}  volume= {this.props.volume}/>
       );
     });
    
     return (
-      <div>
+      <div id ="padBank">
     {padBank}
     </div>
     );
